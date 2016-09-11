@@ -4,9 +4,6 @@ from os.path import isdir, join, isfile
 import random
 import json
 
-ham_files = []
-spam_files = []
-
 def readHamOrSpam(type,folderPath):
     global ham_files
     global spam_files
@@ -28,40 +25,68 @@ def readFolder(folderPath,folderName):
         for d in dirs:
             readFolder(join(folderPath,folderName),d)
 
-rootFolder = sys.argv[1]
-rIndex = rootFolder.rfind("/")
-readFolder(rootFolder[0:rIndex],rootFolder[rIndex+1:])
-
-#number of all files
-numFiles = len(ham_files) + len(spam_files)
-#select only 10% to train, Pick half between Spam and Ham
-numTrainFiles = int(round(0.1*numFiles*0.5))
-
-ham_files = random.sample(ham_files,numTrainFiles)
-spam_files = random.sample(spam_files,numTrainFiles)
-
-hamDict = {}
-spamDict = {}
-
 def trainClass(dictionary,filepaths):
     for f in filepaths:
-        filestream = open(f,"r",encoding="latin1")
-        content = filestream.read()
-        tokens = content.split()
-        for token in tokens:
-            if(token in dictionary):
-                dictionary[token] = dictionary[token] + 1
-            else:
-                dictionary[token] = 1
+        try:
+            filestream = open(f,"r",encoding="latin1")
+            content = filestream.read()
+            tokens = content.split()
+            for token in tokens:
+                if(token in dictionary):
+                    dictionary[token] = dictionary[token] + 1
+                else:
+                    dictionary[token] = 1
+        except:
+            print("Could not process file {0}".format(f))
+        finally:
+            filestream.close()
 
-trainClass(hamDict,ham_files)
-trainClass(spamDict,spam_files)
+#usage: nblearn.py train_folder_path [downsamplingRatio]
+#Example:
+#$ python3 nblearn.py /home/vitidn/mydata/repo_git/CSCI544/Assignment1/data/train
+#$ python3 nblearn.py /home/vitidn/mydata/repo_git/CSCI544/Assignment1/data/train 0.1
+if __name__ == "__main__":
+    #list of all "HAM" fiels
+    ham_files = []
+    #list of all "SPAM" files
+    spam_files = []
 
-#save the model's parameters
-modelParameters = {
-    "ham":hamDict,
-    "spam":spamDict
-}
+    rootFolder = sys.argv[1]
+    if(len(sys.argv)==3):
+        downsamplingRatio = float(sys.argv[2])
+        #for reproducibility
+        random.seed(100)
+    else:
+        downsamplingRatio = 1.0
 
-with open('nbmodel.txt','w') as writefile:
-    json.dump(modelParameters,writefile)
+    rIndex = rootFolder.rfind("/")
+    readFolder(rootFolder[0:rIndex],rootFolder[rIndex+1:])
+
+    if(downsamplingRatio < 1.0):
+        #number of all files
+        numFiles = len(ham_files) + len(spam_files)
+        #select only {downsamplingRatio}% to train, Pick half between Spam and Ham
+        numTrainFiles = int(round(downsamplingRatio*numFiles*0.5))
+
+        ham_files = random.sample(ham_files,numTrainFiles)
+        spam_files = random.sample(spam_files,numTrainFiles)
+
+    hamCount = len(ham_files)
+    spamCount = len(spam_files)
+
+    hamDict = {}
+    spamDict = {}
+
+    trainClass(hamDict,ham_files)
+    trainClass(spamDict,spam_files)
+
+    #save the model's parameters
+    modelParameters = {
+        "ham":hamDict,
+        "spam":spamDict,
+        "hamCount":hamCount,
+        "spamCount":spamCount
+    }
+
+    with open('nbmodel.txt','w') as writefile:
+        json.dump(modelParameters,writefile)
