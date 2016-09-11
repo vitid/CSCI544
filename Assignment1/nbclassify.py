@@ -4,20 +4,6 @@ from os.path import isdir, join, isfile
 import json
 import math
 
-with open('nbmodel.txt') as parameterfile:
-    parameters = json.load(parameterfile)
-
-hamDict = parameters["ham"]
-spamDict = parameters["spam"]
-
-distWords = list(hamDict.keys()) + list(spamDict.keys())
-distWords = list(set(distWords))
-vocabSize = len(distWords)
-
-hamWordCount = sum(list(hamDict.values()))
-spamWordCount = sum(list(spamDict.values()))  
-
-all_files = []
 def readFolder(folderPath,folderName):
     global all_files
     #read .txt files
@@ -28,38 +14,66 @@ def readFolder(folderPath,folderName):
     for d in dirs:
         readFolder(join(folderPath,folderName),d)
 
-def calculateProb(dictionary,wordcount,vocabSize,content):
+def calculateProb(classProb,dictionary,wordcount,vocabSize,content):
     tokens = content.split()
     counts = [dictionary[token] if token in dictionary else 0 for token in tokens]
     logodds = [ math.log((c+1)/(wordcount + vocabSize)) for c in counts]
-    sumLogOdds = sum(logodds)
+    sumLogOdds = sum(logodds) + math.log(classProb)
     return sumLogOdds
 
-rootFolder = sys.argv[1]
-rIndex = rootFolder.rfind("/")
-#read all files to predict into all_files
-readFolder(rootFolder[0:rIndex],rootFolder[rIndex+1:])
-predictedLabels = []
+#usage: nbclassify.py test_folder_path
+#Example:
+#$ python3 nbclassify.py /home/vitidn/mydata/repo_git/CSCI544/Assignment1/data/dev
+if __name__ == "__main__":
+    #read the model's parameter
+    with open('nbmodel.txt') as parameterfile:
+        parameters = json.load(parameterfile)
 
-for f in all_files:
-    try:
-        filestream = open(f,"r",encoding="latin1")
-        content = filestream.read()
-        probHam = calculateProb(hamDict,hamWordCount,vocabSize,content)
-        probSpam = calculateProb(spamDict,spamWordCount,vocabSize,content)
-        if(probHam > probSpam):
-            predictedLabels = predictedLabels + ["ham"]
-        else:
-            predictedLabels = predictedLabels + ["spam"]
-    except :
-        print("Could not process file {0}".format(f))
-    finally:
-        filestream.close()
+    hamDict = parameters["ham"]
+    spamDict = parameters["spam"]
 
-writeContent = ""
-for result in zip(all_files,predictedLabels):
-    writeContent = writeContent + "{0} {1}".format(result[1],result[0]) + "\n"
+    hamCount = parameters["hamCount"]
+    spamCount = parameters["spamCount"]
 
-outputfile = open("nboutput.txt","w")
-outputfile.write(writeContent)
-outputfile.close()
+    distWords = list(hamDict.keys()) + list(spamDict.keys())
+    distWords = list(set(distWords))
+    vocabSize = len(distWords)
+
+    hamWordCount = sum(list(hamDict.values()))
+    spamWordCount = sum(list(spamDict.values()))  
+
+    #files to be predicted
+    all_files = []
+
+    rootFolder = sys.argv[1]
+    rIndex = rootFolder.rfind("/")
+    #read all files to predict into all_files
+    readFolder(rootFolder[0:rIndex],rootFolder[rIndex+1:])
+    predictedLabels = []
+
+    #do the prediction
+    hamClassProb = hamCount / (hamCount + spamCount)
+    spamClassProb = spamCount / (hamCount + spamCount)
+    for f in all_files:
+        try:
+            filestream = open(f,"r",encoding="latin1")
+            content = filestream.read()
+            probHam = calculateProb(hamClassProb,hamDict,hamWordCount,vocabSize,content)
+            probSpam = calculateProb(spamClassProb,spamDict,spamWordCount,vocabSize,content)
+            if(probHam > probSpam):
+                predictedLabels = predictedLabels + ["ham"]
+            else:
+                predictedLabels = predictedLabels + ["spam"]
+        except :
+            print("Could not process file {0}".format(f))
+        finally:
+            filestream.close()
+
+    #write out the result
+    writeContent = ""
+    for result in zip(all_files,predictedLabels):
+        writeContent = writeContent + "{0} {1}".format(result[1],result[0]) + "\n"
+
+    outputfile = open("nboutput.txt","w")
+    outputfile.write(writeContent)
+    outputfile.close()
