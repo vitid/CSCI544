@@ -14,9 +14,12 @@ def readFolder(folderPath,folderName):
     for d in dirs:
         readFolder(join(folderPath,folderName),d)
 
-def calculateProb(classProb,dictionary,wordcount,vocabSize,content):
+def calculateProb(classProb,dictionary,anotherDictionary,wordcount,vocabSize,content):
     tokens = content.split()
-    counts = [dictionary[token] if token in dictionary else 0 for token in tokens]
+    #do add-one smoothing only if the word appeared in at least one dictionary
+    counts = [dictionary[token] if token in dictionary else 0 if token in anotherDictionary else -1 for token in tokens]
+    counts = [c for c in counts if c != -1]
+    
     logodds = [ math.log((c+1)/(wordcount + vocabSize)) for c in counts]
     sumLogOdds = sum(logodds) + math.log(classProb)
     return sumLogOdds
@@ -58,8 +61,8 @@ if __name__ == "__main__":
         try:
             filestream = open(f,"r",encoding="latin1")
             content = filestream.read()
-            probHam = calculateProb(hamClassProb,hamDict,hamWordCount,vocabSize,content)
-            probSpam = calculateProb(spamClassProb,spamDict,spamWordCount,vocabSize,content)
+            probHam = calculateProb(hamClassProb,hamDict,spamDict,hamWordCount,vocabSize,content)
+            probSpam = calculateProb(spamClassProb,spamDict,hamDict,spamWordCount,vocabSize,content)
             if(probHam > probSpam):
                 predictedLabels = predictedLabels + ["ham"]
             else:
