@@ -27,7 +27,7 @@ def calculateProb(smoothingNumber,classProb,dictionary,anotherDictionary,wordcou
 
 #usage: nbclassify_modify.py test_folder_path smoothing_number threshold_key_length
 #Example:
-#$ python3 nbclassify_modify.py /home/vitidn/mydata/repo_git/CSCI544/Assignment1/data/dev 1
+#$ python3 nbclassify_modify.py /home/vitidn/mydata/repo_git/CSCI544/Assignment1/data/dev 1 2
 if __name__ == "__main__":
     #read the model's parameter
     with open('nbmodel.txt') as parameterfile:
