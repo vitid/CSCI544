@@ -1,42 +1,42 @@
 Assignment 2 Report
 
-Name:
+Name: Vitid Nakareseisoon
 
 Part I.
 
 1. Performance of standard perceptron on the development data with 100% of the training data
-1a. spam precision:
-1b. spam recall: 
-1c. spam F1 score: 
-1d. ham precision:
-1e. ham recall: 
-1f. ham F1 score:
+1a. spam precision: 0.987098545155092
+1b. spam recall: 0.9785034013605443
+1c. spam F1 score: 0.9827821809237497
+1d. ham precision: 0.9484334203655352
+1e. ham recall: 0.9686666666666667
+1f. ham F1 score: 0.95844327176781
 
 2. Performance of averaged perceptron on the development data with 100% of the training data
-2a. spam precision:
-2b. spam recall: 
-2c. spam F1 score: 
-2d. ham precision:
-2e. ham recall: 
-2f. ham F1 score:
+2a. spam precision: 0.983432916892993
+2b. spam recall: 0.9853061224489796
+2c. spam F1 score: 0.9843686285170586
+2d. ham precision: 0.9638312123241795
+2e. ham recall: 0.9593333333333334
+2f. ham F1 score: 0.9615770130304042
 
 Part II.
 
 3. Performance of standard perceptron on the development data with 10% of the training data
-3a. spam precision:
-3b. spam recall: 
-3c. spam F1 score: 
-3d. ham precision:
-3e. ham recall: 
-3f. ham F1 score:
+3a. spam precision: 0.9684908789386402
+3b. spam recall: 0.953469387755102
+3c. spam F1 score: 0.9609214315096669
+3d. ham precision: 0.8901734104046243
+3e. ham recall: 0.924
+3f. ham F1 score: 0.9067713444553483
 
 4. Performance of averaged perceptron on the development data with 10% of the training data
-4a. spam precision:
-4b. spam recall: 
-4c. spam F1 score: 
-4d. ham precision:
-4e. ham recall: 
-4f. ham F1 score:
+4a. spam precision: 0.9673972602739725
+4b. spam recall: 0.9608163265306122
+4c. spam F1 score: 0.9640955631399316
+4d. ham precision: 0.9055737704918033
+4e. ham recall: 0.9206666666666666
+4f. ham F1 score: 0.9130578512396694
 
 Part III. You are welcome to reuse code you wrote for assignment 1,
 but we would like to know how you handled the following tasks.
@@ -44,7 +44,17 @@ but we would like to know how you handled the following tasks.
 5. How did you calculate precision, recall and F1 score? If you used a
 separate script, please give the name of the script and describe how
 to run it.
+ANS: I created a confusion matrix which consisted of the number of True Positive, True Negative, False Positive, False Negative. Then I read all the predicted result(predict_result.txt), and increased a count in the confusion matrix depend on which category the prediction belong to. Then I calculated Precision, Recall, and F1 Score for both HAM and SPAM according to the formula in the slide. The script name is: evaluate.py. You can invoke it by calling the file and supply a prediction result file as the argument: "python evaluate.py {PREDICTION_RESULT.TXT}".
 
 6. How did you separate 10% of the training data? If you used a
 separate script, please give the name of the script and describe how
 to run it. Explain how you or your code choose the files.
+ANS: I calculate the total number of files. From that number, I picked 5% of it from HAM and SPAM files randomly(so that we have 10% of data). For the corner case where either a number of HAM or SPAM files is less than that number, the number of file picked will become the smallest one.
+
+For per_learn.py, this can be invoked by:
+python per_learn.py {dir_path} [{down_sampling_ratio}]
+
+For avg_per_learn.py, this can be invoked by:
+python avg_per_learn.py {dir_path} [{down_sampling_ratio}]
+
+, where {down_sampling_ratio} is the optional argument. It determines the ratio of files to run on(0.1 in this case) and must have value between 0 and 1.

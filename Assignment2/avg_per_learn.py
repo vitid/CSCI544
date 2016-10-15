@@ -52,7 +52,7 @@ def readWordFeatures(labelFilePathTuple):
         filestream.close()
     return wordFeatures
 
-def trainPerceptron(labelFilePathTuples,fileFeatureDict,maxIteration=20):
+def trainPerceptron(labelFilePathTuples,fileFeatureDict,maxIteration=30):
     """
     For Ham, set Label = -1, for Spam, set Label = +1
 
@@ -60,6 +60,12 @@ def trainPerceptron(labelFilePathTuples,fileFeatureDict,maxIteration=20):
     """
     weights = {}
     b = 0
+
+    #For averaged Perceptron
+    us = {}
+    beta = 0
+    c = 1
+
     for i in range(0,maxIteration):
         #randomize file index
         shuffle(labelFilePathTuples)
@@ -79,6 +85,7 @@ def trainPerceptron(labelFilePathTuples,fileFeatureDict,maxIteration=20):
             for word, wordCount in wordCounts.items():
                 if(word not in weights):
                     weights[word] = 0
+                    us[word] = 0
                 wordWeight = weights[word]
                 
                 alpha += wordWeight*wordCount
@@ -87,14 +94,21 @@ def trainPerceptron(labelFilePathTuples,fileFeatureDict,maxIteration=20):
             if(trueLabel * alpha <= 0):
                 for word in wordCounts.keys():
                     weights[word] = weights[word] + trueLabel*wordCounts[word]
+                    us[word] = us[word] + trueLabel*c*wordCounts[word]
                 b = b + trueLabel
+                beta = beta + trueLabel*c
+            c += 1
 
-    return (weights,b)
+    #averaging parameters
+    for word in us:
+        us[word] = weights[word] - (1/c)*us[word]
+    beta = b - (1/c)*beta
+    return (us,beta)
             
-#usage: per_learn.py train_folder_path [downsamplingRatio]
+#usage: avg_per_learn.py train_folder_path [downsamplingRatio]
 #Example:
-#$ python3 per_learn.py /home/vitidn/mydata/repo_git/CSCI544/Assignment1/data/train
-#$ python3 per_learn.py /home/vitidn/mydata/repo_git/CSCI544/Assignment1/data/train 0.1
+#$ python3 avg_per_learn.py /home/vitidn/mydata/repo_git/CSCI544/Assignment1/data/train
+#$ python3 avg_per_learn.py /home/vitidn/mydata/repo_git/CSCI544/Assignment1/data/train 0.1
 if __name__ == "__main__":
     #list of all "HAM" fiels
     ham_files = []
@@ -119,7 +133,7 @@ if __name__ == "__main__":
         numTrainFiles = int(round(downsamplingRatio*numFiles*0.5))
         #for a case that a number of Ham/Spam is less than 5% of data
         numTrainFiles = min(numTrainFiles,len(ham_files),len(spam_files))
-
+        
         ham_files = random.sample(ham_files,numTrainFiles)
         spam_files = random.sample(spam_files,numTrainFiles)
 

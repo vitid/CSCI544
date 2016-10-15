@@ -1,6 +1,6 @@
 import sys
 
-#usage: evaluate.py predict_result.txt
+#usage: python3 evaluate.py predict_result.txt
 if __name__ == "__main__":
 
     filename = sys.argv[1]
