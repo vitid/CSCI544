@@ -96,6 +96,6 @@ if __name__ == "__main__":
     for result in zip(all_files,predictedLabels):
         writeContent = writeContent + "{0} {1}".format(result[1],result[0]) + "\n"
 
-    outputfile = open(writeFilePath,"w")
+    outputfile = open(writeFilePath,"w", encoding="latin1")
     outputfile.write(writeContent)
     outputfile.close()

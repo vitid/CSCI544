@@ -29,9 +29,8 @@ def readFolder(folderPath,folderName):
 
 def readAllWordFeatures(labelFilePathTuples):
     """
-    read word frequency of all document and collect all distinct words
+    read word frequency of all document
     """
-    global distinctWords
     fileFeatureDict = {}
 
     for t in labelFilePathTuples:
@@ -40,30 +39,26 @@ def readAllWordFeatures(labelFilePathTuples):
     return fileFeatureDict
 
 def readWordFeatures(labelFilePathTuple):
-    global distinctWords
     wordFeatures = {}
     f = labelFilePathTuple[1]
-    print("reading:" + f)
     try:
         filestream = open(f,"r",encoding="latin1")
         content = filestream.read()
         tokens = content.split()
         wordFeatures = dict(Counter(tokens))
-
-        #distinctWords = distinctWords.union(set(wordFeatures.keys())) 
     except:
         print("Could not process file {0}".format(f))
     finally:
         filestream.close()
     return wordFeatures
 
-def trainPerceptron(labelFilePathTuples,fileFeatureDict,distinctWords,maxIteration=20):
+def trainPerceptron(labelFilePathTuples,fileFeatureDict,maxIteration=20):
     """
     For Ham, set Label = -1, for Spam, set Label = +1
 
     return (weights,b)
     """
-    weights = {w:0 for w in distinctWords}
+    weights = {}
     b = 0
     for i in range(0,maxIteration):
         #randomize file index
@@ -82,18 +77,16 @@ def trainPerceptron(labelFilePathTuples,fileFeatureDict,distinctWords,maxIterati
 
             alpha = 0    
             for word, wordCount in wordCounts.items():
-                if(word in weights):
-                    wordWeight = weights[word]
-                else:
-                    wordWeight = 0
+                if(word not in weights):
+                    weights[word] = 0
+                wordWeight = weights[word]
                 
                 alpha += wordWeight*wordCount
             #alpha is a prediction result
             alpha += b
             if(trueLabel * alpha <= 0):
                 for word in wordCounts.keys():
-                    if(word in weights):
-                        weights[word] = weights[word] + trueLabel*wordCounts[word]
+                    weights[word] = weights[word] + trueLabel*wordCounts[word]
                 b = b + trueLabel
 
     return (weights,b)
@@ -134,12 +127,9 @@ if __name__ == "__main__":
     spam_files = [("spam",filepath) for filepath in spam_files]
     ham_files = [("ham",filepath) for filepath in ham_files]
     labelFilePathTuples = spam_files + ham_files
-    distinctWords = set()
-    #read features of all files(cached) + read distinct words(distinctWords)
-    print("start reading files...")
+    #read features of all files(cached)
     fileFeatureDict = readAllWordFeatures(labelFilePathTuples)
-    print("finish reading files...")
-    parameters = trainPerceptron(labelFilePathTuples,fileFeatureDict,distinctWords)
+    parameters = trainPerceptron(labelFilePathTuples,fileFeatureDict)
 
     with open('per_model.txt','w') as writefile:
         json.dump(parameters,writefile)
