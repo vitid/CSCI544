@@ -4,3 +4,9 @@ Assignment1/.vscode
 Assignment1/.vscode/*
 Assignment1/nbmodel.txt
 Assignment1/nboutput.txt
+Assignment2/data/*
+Assignment2/data
+Assignment2/.vscode
+Assignment2/.vscode/*
+Assignment2/per_model.txt
+Assignment2/predict_result.txt
