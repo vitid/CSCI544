@@ -1,0 +1,50 @@
+Assignment 2 Report
+
+Name:
+
+Part I.
+
+1. Performance of standard perceptron on the development data with 100% of the training data
+1a. spam precision:
+1b. spam recall: 
+1c. spam F1 score: 
+1d. ham precision:
+1e. ham recall: 
+1f. ham F1 score:
+
+2. Performance of averaged perceptron on the development data with 100% of the training data
+2a. spam precision:
+2b. spam recall: 
+2c. spam F1 score: 
+2d. ham precision:
+2e. ham recall: 
+2f. ham F1 score:
+
+Part II.
+
+3. Performance of standard perceptron on the development data with 10% of the training data
+3a. spam precision:
+3b. spam recall: 
+3c. spam F1 score: 
+3d. ham precision:
+3e. ham recall: 
+3f. ham F1 score:
+
+4. Performance of averaged perceptron on the development data with 10% of the training data
+4a. spam precision:
+4b. spam recall: 
+4c. spam F1 score: 
+4d. ham precision:
+4e. ham recall: 
+4f. ham F1 score:
+
+Part III. You are welcome to reuse code you wrote for assignment 1,
+but we would like to know how you handled the following tasks.
+
+5. How did you calculate precision, recall and F1 score? If you used a
+separate script, please give the name of the script and describe how
+to run it.
+
+6. How did you separate 10% of the training data? If you used a
+separate script, please give the name of the script and describe how
+to run it. Explain how you or your code choose the files.
