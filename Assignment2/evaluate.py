@@ -21,31 +21,17 @@ if __name__ == "__main__":
 
             predictResults = predictResults + [(predictLabel,actualLabel)]
 
-    #construct confusion matrix
-    #   **********      Predict HAM |   Predict SPAM
-    #   Actual HAM          [0][0]          [0][1]
-    #   Actual SPAM         [1][0]          [1][1]
-    #-------------------------
+    truePositive =  sum([1 for x in predictResults if x[0] == x[1] == "ham"])
+    trueNegative =  sum([1 for x in predictResults if x[0] == x[1] == "spam"])
+    falsePositive =  sum([1 for x in predictResults if x[0] == "ham" and x[1] == "spam"])
+    falseNegative =  sum([1 for x in predictResults if x[0] == "spam" and x[1] == "ham"])
 
-    confusionMatrix = [[0,0],[0,0]]
-    for result in predictResults:
-        if(result[0] == result[1] == "ham"):
-            confusionMatrix[0][0] = confusionMatrix[0][0] + 1
-        elif(result[0] == result[1] == "spam"):
-            confusionMatrix[1][1] = confusionMatrix[1][1] + 1
-        elif(result[0] == "ham" and result[1] == "spam"):
-            confusionMatrix[1][0] = confusionMatrix[1][0] + 1
-        else:
-            confusionMatrix[0][1] = confusionMatrix[0][1] + 1
-
-    print(confusionMatrix)
-
-    precisionHam = confusionMatrix[0][0] / (confusionMatrix[0][0] + confusionMatrix[1][0])
-    recallHam = confusionMatrix[0][0] / (confusionMatrix[0][0] + confusionMatrix[0][1])
+    precisionHam = truePositive / (truePositive + falsePositive)
+    recallHam = truePositive / (truePositive + falseNegative)
     fscoreHam = 2 * precisionHam * recallHam / (precisionHam + recallHam)
-    print("[HAM]Precision:{0},Recall:{1},FScore:{2}".format(precisionHam,recallHam,fscoreHam))
+    print("[HAM]Precision:" + str(precisionHam) + ",Recall:" + str(recallHam) + ",FScore:" + str(fscoreHam))
 
-    precisionSpam = confusionMatrix[1][1] / (confusionMatrix[1][1] + confusionMatrix[0][1])
-    recallSpam = confusionMatrix[1][1] / (confusionMatrix[1][1] + confusionMatrix[1][0])
+    precisionSpam = trueNegative / (trueNegative + falseNegative)
+    recallSpam = trueNegative / (trueNegative + falsePositive)
     fscoreSpam = 2 * precisionSpam * recallSpam / (precisionSpam + recallSpam)
-    print("[SPAM]Precision:{0},Recall:{1},FScore:{2}".format(precisionSpam,recallSpam,fscoreSpam))
+    print("[SPAM]Precision:" + str(precisionSpam) + ",Recall:" + str(recallSpam) + ",FScore:" + str(fscoreSpam))
