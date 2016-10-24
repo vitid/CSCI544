@@ -44,7 +44,19 @@ but we would like to know how you handled the following tasks.
 5. How did you calculate precision, recall and F1 score? If you used a
 separate script, please give the name of the script and describe how
 to run it.
-ANS: I created a confusion matrix which consisted of the number of True Positive, True Negative, False Positive, False Negative. Then I read all the predicted result(predict_result.txt), and increased a count in the confusion matrix depend on which category the prediction belong to. Then I calculated Precision, Recall, and F1 Score for both HAM and SPAM according to the formula in the slide. The script name is: evaluate.py. You can invoke it by calling the file and supply a prediction result file as the argument: "python evaluate.py {PREDICTION_RESULT.TXT}".
+ANS: I created a confusion matrix which consisted of the number of True Positive, True Negative, False Positive, False Negative. I labelled Ham emails as positive and Spam emails as negative. Then I read all the predicted result(predict_result.txt), and increased a count in the confusion matrix depend on which category the prediction belong to. Then I calculated Precision, Recall, and F1 Score for both HAM and SPAM according to the formula in the slide. The formula is as follows:
+
+For Ham:
+Precision = truePositive / (truePositive + falsePositive)
+Recall = truePositive / (truePositive + falseNegative)
+F1Score = 2 * Precision * Recall / (Precision + Recall)
+
+For Spam:
+Precision = trueNegative / (trueNegative + falseNegative)
+Recall = trueNegative / (trueNegative + falsePositive)
+F1Score = 2 * Precision * Recall / (Precision + Recall)
+
+The script name is: evaluate.py. You can invoke it by calling the file and supply a prediction result file as the argument: "python evaluate.py {PREDICTION_RESULT.TXT}".
 
 6. How did you separate 10% of the training data? If you used a
 separate script, please give the name of the script and describe how
