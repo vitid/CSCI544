@@ -147,5 +147,5 @@ if __name__ == "__main__":
     fileFeatureDict = readAllWordFeatures(labelFilePathTuples)
     parameters = trainPerceptron(labelFilePathTuples,fileFeatureDict)
 
-    with open('per_model.txt','w') as writefile:
+    with open('per_model.txt','w',encoding="latin1") as writefile:
         json.dump(parameters,writefile)
