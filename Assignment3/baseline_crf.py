@@ -64,6 +64,7 @@ if __name__ == "__main__":
     for xSeq,ySeq in zip(dialogCorpusFeature,dialogCorpusLabel):
         crfModel.append(xSeq,ySeq)
 
+    print("begin training...")
     crfModel.train('crfModel.crfsuite')
 
     #tag test data
