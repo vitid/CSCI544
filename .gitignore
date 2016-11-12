@@ -10,3 +10,8 @@ Assignment2/.vscode
 Assignment2/.vscode/*
 Assignment2/per_model.txt
 Assignment2/predict_result.txt
+Assignment3/data/*
+Assignment3/tmp/*
+Assignment3/crfModel.crfsuite
+*.idea
+*.pyc
