@@ -3,6 +3,8 @@ import pycrfsuite
 import sys
 import glob
 import os
+import math
+from random import shuffle
 
 def generateFeatures(dialog,isChangeSpeaker,isFirstUtterance):
     feature = [
@@ -50,36 +52,83 @@ def extractFeaturesAndLabels(inputFolder):
 
 if __name__ == "__main__":
     '''
-    usage: python3 baseline_crf.py ./tmp/train ./tmp/test ./tmp/result.txt
-
+    usage: python3 baseline_crf.py ./tmp/train ./tmp/test ./tmp/result.txt [k_fold_cross_validation]
     '''
     inputFolder = sys.argv[1]
     testFolder = sys.argv[2]
     outputFile = sys.argv[3]
 
+    kFoldCrossValidation = -1
+    if len(sys.argv) > 4:
+        kFoldCrossValidation = int(sys.argv[4])
+
     dialogCorpusFeature, dialogCorpusLabel = extractFeaturesAndLabels(inputFolder)
 
-    #train CRF
-    crfModel = pycrfsuite.Trainer(verbose=False)
-    for xSeq,ySeq in zip(dialogCorpusFeature,dialogCorpusLabel):
-        crfModel.append(xSeq,ySeq)
+    #if we want to train the whole data and predict the test data as required
+    if(kFoldCrossValidation == -1):
+        #train CRF
+        crfModel = pycrfsuite.Trainer(verbose=False)
+        for xSeq,ySeq in zip(dialogCorpusFeature,dialogCorpusLabel):
+            crfModel.append(xSeq,ySeq)
 
-    print("begin training...")
-    crfModel.train('crfModel.crfsuite')
+        print("begin training...")
+        crfModel.train('crfModel.crfsuite')
+        print("finish training...")
 
-    #tag test data
-    crfTagger = pycrfsuite.Tagger()
-    crfTagger.open('crfModel.crfsuite')
+        #tag test data
+        crfTagger = pycrfsuite.Tagger()
+        crfTagger.open('crfModel.crfsuite')
 
-    dialogCorpusFeature, dialogCorpusLabel = extractFeaturesAndLabels(testFolder)
-    testFileNames = sorted(glob.glob(os.path.join(testFolder, "*.csv")))
+        dialogCorpusFeature, dialogCorpusLabel = extractFeaturesAndLabels(testFolder)
+        testFileNames = sorted(glob.glob(os.path.join(testFolder, "*.csv")))
 
-    writeContent = ""
-    for index,testFileName in enumerate(testFileNames):
-        writeContent += testFileName.split("/")[-1] + "\n"
-        writeContent += "\n".join(crfTagger.tag(dialogCorpusFeature[index]))
-        writeContent += "\n\n"
+        writeContent = ""
+        for index,testFileName in enumerate(testFileNames):
+            writeContent += testFileName.split("/")[-1] + "\n"
+            writeContent += "\n".join(crfTagger.tag(dialogCorpusFeature[index]))
+            writeContent += "\n\n"
 
-    writer = open(outputFile, "w", encoding="latin1")
-    writer.write(writeContent)
-    writer.close()
+        writer = open(outputFile, "w", encoding="latin1")
+        writer.write(writeContent)
+        writer.close()
+    else:
+        #here, we want to run k-fold cross validation
+        foldLabels = list(range(kFoldCrossValidation)) * int(math.ceil((len(dialogCorpusFeature)+0.0) / kFoldCrossValidation))
+        foldLabels = foldLabels[0:len(dialogCorpusFeature)]
+        shuffle(foldLabels)
+
+        accuracies = []
+        for foldLabel in range(kFoldCrossValidation):
+            trainDialogCorpusFeature = [corpus for corpus,label in zip(dialogCorpusFeature,foldLabels) if label != foldLabel]
+            trainDialogCorpusLabel = [corpusLabel for corpusLabel, label in zip(dialogCorpusLabel, foldLabels) if label != foldLabel]
+
+            testDialogCorpusFeature = [corpus for corpus, label in zip(dialogCorpusFeature, foldLabels) if label == foldLabel]
+            testDialogCorpusLabel = [corpusLabel for corpusLabel, label in zip(dialogCorpusLabel, foldLabels) if label == foldLabel]
+
+            # train CRF
+            crfModel = pycrfsuite.Trainer(verbose=False)
+            for xSeq, ySeq in zip(trainDialogCorpusFeature, trainDialogCorpusLabel):
+                crfModel.append(xSeq, ySeq)
+
+            print("begin training fold:{}...".format(foldLabel))
+            crfModel.train('crfModel.cv.crfsuite')
+            print("finish training...")
+
+            # tag test data
+            crfTagger = pycrfsuite.Tagger()
+            crfTagger.open('crfModel.cv.crfsuite')
+
+            predictDialogCorpusTags = [crfTagger.tag(d) for d in testDialogCorpusFeature]
+            numPredict = 0
+            numCorrect = 0
+            for predictDialogCorpusTag,actualDialogCorpusTag in zip(predictDialogCorpusTags,testDialogCorpusLabel):
+                for predictTag,actualTag in zip(predictDialogCorpusTag,actualDialogCorpusTag):
+                    if predictTag == actualTag:
+                        numCorrect += 1
+                    numPredict += 1
+
+            accuracy = ((numCorrect+0.0) / numPredict)
+            accuracies.append(accuracy)
+
+        print("Accuracies:{}".format(accuracies))
+        print("Average accuracy:{}".format(sum(accuracies)/len(accuracies)))
