@@ -12,6 +12,7 @@ Assignment2/per_model.txt
 Assignment2/predict_result.txt
 Assignment3/data/*
 Assignment3/tmp/*
+Assignment3/tmp2/*
 *.crfsuite
 *.idea
 *.pyc

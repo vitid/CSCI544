@@ -14,8 +14,9 @@ if __name__ == "__main__":
     predictList = []
     with open(outputFile,'r') as inputStream:
         for line in inputStream:
-            if line.strip()[-4:] == ".csv":
-                filePath = os.path.join(testFolder, line.strip())
+            if line.strip()[-5:] == ".csv\"":
+                fileName = line.strip().replace("\"","").replace("Filename=","")
+                filePath = os.path.join(testFolder, fileName)
                 predictTags = []
             elif len(line.strip()) > 0:
                 predictTags += [line.strip()]

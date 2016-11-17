@@ -1,18 +1,38 @@
 Assignment 3 Report
 
-Name:
+Name: Vitid Nakareseisoon
 
 1. If you included files other than baseline_crf.py, advanced_crf.py, evaluate_model.py, and hw3_corpus_tool.py, or modified hw3_corpus_tool.py please describe what the files do and/or your modifications to hw3_corpus_tool.py.
 
+ANS: I include hw3_corpus_tool.py but didn't do any modifications.
+
 2. Describe how you evaluated your baseline and advanced features
 
-Replace this text with a description of how you used the labeled data
-to train and evaluate different models (e.g., moving ~25% data into a
-separate development directory).
+ANS: I moved around 35% of the data files into /test directory(noted: I didn't separate 25% as recommended because it took so long to run on my machine). I used the remaining files for training and cross-validation, that is, I performed 3-fold cross validation on 65% of data. I justified the benefit of adding/removing advance features based on the cross validation result. After I satisfied with the performance, I trained the model on the whole 65% data and use it to predict tags of 35% hold-out test data.
+
 
 3. Describe your advanced feature set.
 
+ANS:
+    * isEndWithHyphen -> True/False indicating whether the dialog text ends with hyphen("-/" or "- /"). This idea comes from my observation that act_tag % (Abandoned or Turn-Exit) dialog text usually ends with this token.
+    * isEndWithSlash -> True/False. Similar to the above reason. Some act_tags tend to end with this.
+    * count_{POS} -> count a number any POS appeared in the utterance. The idea is that a frequency of POS maybe helpful in identifying act_tag.
+    * For utterance without PosTag, use dialog text as its token and POS.
+
 4. If you tried alternate advanced feature sets, please describe them.
 
-5. Accuracy of baseline features was:
-6. Accuracy of advanced features was:
+ANS: I also tried other features such as:
+    * bigram version of Token and POS
+    * isLastUtterance -> similar to marker indicating a first utterance. This one indicates the last utterance.
+    * positionConversation -> relative position of utterance in the dialog
+    * numContinueSpeak -> number of the countinue utterances of the current speaker after this utterance ends.
+    * token_pos -> glue token and pos together eg: token_pos.0=The/DT
+    * isLaughted, isInhale, isGasp -> indicate whether specific <...> expression keyword appears in dialog text. The idea is this information is not appeared in PosTag(token,pos) and maybe helpful in identifying act_tag.
+    * numWords -> number of words in the current utterance.
+    * nextConversationLength -> number of words in the next utterance.
+
+    Unfortunately, the performance of including such features is worsen based on the cross-validation results so I decided to exclude them.
+
+5. Accuracy of baseline features was: 0.7194420056579846
+6. Accuracy of advanced features was: 0.7238318212857282
+

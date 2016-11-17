@@ -6,21 +6,43 @@ import os
 import math
 from random import shuffle
 
-def generateFeatures(dialog,isChangeSpeaker,isFirstUtterance):
+#def generateFeatures(dialog,isChangeSpeaker,isFirstUtterance,positionConversation,numContinueSpeak,nextConversationLength,isLastUtterance):
+def generateFeatures(dialog, isChangeSpeaker, isFirstUtterance):
     feature = [
             "isChangeSpeaker={}".format(isChangeSpeaker),
-            "isFirstUtterance={}".format(isFirstUtterance)
+            "isFirstUtterance={}".format(isFirstUtterance),
+            # "isLastUtterance={}".format(isLastUtterance),
+            # "positionConversation={}".format(positionConversation),
+            # "numContinueSpeak={}".format(numContinueSpeak)
         ]
     if(dialog.pos):
+        countDict = {}
         for index,posTag in enumerate(dialog.pos):
             feature = feature + [
-                "token.{}={}".format(index,posTag.token),
-                "pos.{}={}".format(index,posTag.pos)
+                "token.{}={}".format(index,posTag.token.lower()),
+                "pos.{}={}".format(index,posTag.pos),
+                # "token_pos.{}={}/{}".format(index, posTag.token,posTag.pos),
             ]
+            if posTag.pos in countDict:
+                countDict[posTag.pos] += 1
+            else:
+                countDict[posTag.pos] = 1
+        feature += [
+             # "isLaughted={}".format("<laughter>" in dialog.text.lower()),
+             # "isInhale={}".format("<inhaling>" in dialog.text.lower()),
+             # "isGasp={}".format("<gasp>" in dialog.text.lower()),
+             # "numWords={}".format(len(dialog.pos)),
+             # "nextConversationLength={}".format(nextConversationLength),
+             "isEndWithHyphen={}".format(dialog.text.endswith("-/") or dialog.text.endswith("- /")),
+             "isEndWithSlash={}".format(dialog.text.endswith(" /")),
+        ]
+        for key in countDict:
+            feature += ["count_{}={}".format(key,countDict[key])]
     else:
         feature = feature + [
-            "token.0={}".format("UNDEFINED"),
-            "pos.0={}".format("UNDEFINED")
+            "token.{}={}".format(0, dialog.text),
+            "pos.{}={}".format(0, dialog.text)
+            # "token_pos.{}={}/{}".format(0, dialog.text, dialog.text),
         ]
     return(feature)
 
@@ -39,6 +61,15 @@ def extractFeaturesAndLabels(inputFolder):
             actTag = dialog.act_tag
             currentSpeaker = dialog.speaker
 
+            # numContinueSpeak = 0
+            # while (index + numContinueSpeak + 1) < len(dialogSet) and dialogSet[index + numContinueSpeak + 1].speaker == currentSpeaker:
+            #     numContinueSpeak += 1
+            # nextConversationLength = 0
+            # if (index + 1) < len(dialogSet):
+            #     if dialogSet[index+1].pos:
+            #         nextConversationLength = len(dialogSet[index+1].pos)
+            #feature = generateFeatures(dialog, (currentSpeaker == previousSpeaker), index == 0,(index+1)/len(dialogSet),numContinueSpeak,nextConversationLength,index == (len(dialogSet)-1))
+
             feature = generateFeatures(dialog, (currentSpeaker == previousSpeaker), index == 0)
 
             previousSpeaker = currentSpeaker
@@ -52,7 +83,7 @@ def extractFeaturesAndLabels(inputFolder):
 
 if __name__ == "__main__":
     '''
-    usage: python3 baseline_crf.py ./tmp/train ./tmp/test ./tmp/result.txt [k_fold_cross_validation]
+    usage: python3 advanced_crf.py ./tmp/train ./tmp/test ./tmp/result.txt [k_fold_cross_validation]
     '''
     inputFolder = sys.argv[1]
     testFolder = sys.argv[2]
@@ -141,6 +172,6 @@ if __name__ == "__main__":
 
             accuracy = ((numCorrect+0.0) / numPredict)
             accuracies.append(accuracy)
-
+            #break
         print("Accuracies:{}".format(accuracies))
         print("Average accuracy:{}".format(sum(accuracies)/len(accuracies)))
