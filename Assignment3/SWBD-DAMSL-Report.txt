@@ -16,7 +16,9 @@ ANS: I moved around 35% of the data files into /test directory(noted: I didn't s
 ANS:
     * isEndWithHyphen -> True/False indicating whether the dialog text ends with hyphen("-/" or "- /"). This idea comes from my observation that act_tag % (Abandoned or Turn-Exit) dialog text usually ends with this token.
     * isEndWithSlash -> True/False. Similar to the above reason. Some act_tags tend to end with this.
-    * count_{POS} -> count a number any POS appeared in the utterance. The idea is that a frequency of POS maybe helpful in identifying act_tag.
+    * lastWord, last2Word, last3Word -> capture the last 1 - 3 characters. Similar to the above reason, some last tokens in the text may be useful in identifying act_tag.
+    * Skip POS /, and /.
+    * Turn tokens and POS into a lower case.
     * For utterance without PosTag, use dialog text as its token and POS.
 
 4. If you tried alternate advanced feature sets, please describe them.
@@ -30,9 +32,11 @@ ANS: I also tried other features such as:
     * isLaughted, isInhale, isGasp -> indicate whether specific <...> expression keyword appears in dialog text. The idea is this information is not appeared in PosTag(token,pos) and maybe helpful in identifying act_tag.
     * numWords -> number of words in the current utterance.
     * nextConversationLength -> number of words in the next utterance.
+    * POS_frequency -> frequency of each POS
+    * POS_with_top_frequency
 
     Unfortunately, the performance of including such features is worsen based on the cross-validation results so I decided to exclude them.
 
-5. Accuracy of baseline features was: 0.7194420056579846
-6. Accuracy of advanced features was: 0.7238318212857282
+5. Accuracy of baseline features was: 0.7227866270886464
+6. Accuracy of advanced features was: 0.7300751146229636
 

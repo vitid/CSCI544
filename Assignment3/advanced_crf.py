@@ -5,46 +5,75 @@ import glob
 import os
 import math
 from random import shuffle
+import operator
 
-#def generateFeatures(dialog,isChangeSpeaker,isFirstUtterance,positionConversation,numContinueSpeak,nextConversationLength,isLastUtterance):
+# def generateFeatures(dialog,isChangeSpeaker,isFirstUtterance,positionConversation,numContinueSpeak,nextConversationLength,isLastUtterance):
 def generateFeatures(dialog, isChangeSpeaker, isFirstUtterance):
     feature = [
             "isChangeSpeaker={}".format(isChangeSpeaker),
             "isFirstUtterance={}".format(isFirstUtterance),
+
             # "isLastUtterance={}".format(isLastUtterance),
             # "positionConversation={}".format(positionConversation),
-            # "numContinueSpeak={}".format(numContinueSpeak)
+            # "numContinueSpeak={}".format(numContinueSpeak>0)
         ]
+
+    # numWords = len(dialog.pos) if dialog.pos else 0
+    # numWords = "large" if numWords > 10 else "medium" if numWords > 5 else "small"
+
+    # lastWord = "" if not (dialog.pos) else dialog.pos[-1].token.lower()
+    lastWord = "" if len(dialog.text)<1 else dialog.text[-1]
+    last2Word = lastWord if len(dialog.text)<2 else dialog.text[-2:]
+    last3Word = last2Word if len(dialog.text)<3 else dialog.text[-3:]
+
+    feature += [
+        # "isLaughted={}".format("<laughter>" in dialog.text.lower()),
+        # "isInhale={}".format("<inhaling>" in dialog.text.lower()),
+        # "isGasp={}".format("<gasp>" in dialog.text.lower()),
+        # "numWords={}".format(numWords),
+        # "nextConversationLength={}".format(nextConversationLength),
+
+        "isEndWithHyphen={}".format(dialog.text.endswith("-/") or dialog.text.endswith("- /")),
+        "isEndWithSlash={}".format(dialog.text.endswith(" /")),
+        lastWord,
+        last2Word,
+        last3Word
+    ]
+    # for key in countDict:
+    #     feature += ["count_{}={}".format(key,countDict[key])]
+    sentenceFeature = []
+    # countDict = {"UNDEFINE":0}
     if(dialog.pos):
-        countDict = {}
         for index,posTag in enumerate(dialog.pos):
-            feature = feature + [
-                "token.{}={}".format(index,posTag.token.lower()),
-                "pos.{}={}".format(index,posTag.pos),
+            if posTag.pos in [",","."]:
+                continue
+            sentenceFeature = sentenceFeature + [
+                #"token[{}]={}".format(index,posTag.token.lower()),
+                #"pos[{}]={}".format(index,posTag.pos),
                 # "token_pos.{}={}/{}".format(index, posTag.token,posTag.pos),
+                posTag.token.lower(),posTag.pos.lower()
+                # posTag.token.lower(),
+                # posTag.pos[:2] if len(posTag.pos) > 2 else posTag.pos
+                # "{}/{}".format( posTag.token.lower(), posTag.pos)
             ]
-            if posTag.pos in countDict:
-                countDict[posTag.pos] += 1
-            else:
-                countDict[posTag.pos] = 1
-        feature += [
-             # "isLaughted={}".format("<laughter>" in dialog.text.lower()),
-             # "isInhale={}".format("<inhaling>" in dialog.text.lower()),
-             # "isGasp={}".format("<gasp>" in dialog.text.lower()),
-             # "numWords={}".format(len(dialog.pos)),
-             # "nextConversationLength={}".format(nextConversationLength),
-             "isEndWithHyphen={}".format(dialog.text.endswith("-/") or dialog.text.endswith("- /")),
-             "isEndWithSlash={}".format(dialog.text.endswith(" /")),
-        ]
-        for key in countDict:
-            feature += ["count_{}={}".format(key,countDict[key])]
+            # if posTag.pos in countDict:
+            #     countDict[posTag.pos] += 1
+            # else:
+            #     countDict[posTag.pos] = 1
     else:
-        feature = feature + [
-            "token.{}={}".format(0, dialog.text),
-            "pos.{}={}".format(0, dialog.text)
+        sentenceFeature = sentenceFeature + [
+            # "token[{}]={}".format(0, dialog.text),
+            # "pos[{}]={}".format(0, dialog.text)
             # "token_pos.{}={}/{}".format(0, dialog.text, dialog.text),
+            dialog.text.lower(),dialog.text.lower()
+            # "{}/{}".format(dialog.text, dialog.text)
         ]
-    return(feature)
+
+    # feature = feature + [
+        #POS with highest frequency
+        # sorted(countDict.items(),key=operator.itemgetter(1),reverse=True)[0][0],
+    # ]
+    return(feature + sentenceFeature)
 
 def extractFeaturesAndLabels(inputFolder):
     dialogueCorpus = taTool.get_data(inputFolder)
@@ -68,8 +97,8 @@ def extractFeaturesAndLabels(inputFolder):
             # if (index + 1) < len(dialogSet):
             #     if dialogSet[index+1].pos:
             #         nextConversationLength = len(dialogSet[index+1].pos)
-            #feature = generateFeatures(dialog, (currentSpeaker == previousSpeaker), index == 0,(index+1)/len(dialogSet),numContinueSpeak,nextConversationLength,index == (len(dialogSet)-1))
-
+            # feature = generateFeatures(dialog, (currentSpeaker == previousSpeaker), index == 0,index,numContinueSpeak,nextConversationLength,index == (len(dialogSet)-1))
+            #
             feature = generateFeatures(dialog, (currentSpeaker == previousSpeaker), index == 0)
 
             previousSpeaker = currentSpeaker

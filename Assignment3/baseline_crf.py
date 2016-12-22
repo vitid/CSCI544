@@ -14,13 +14,16 @@ def generateFeatures(dialog,isChangeSpeaker,isFirstUtterance):
     if(dialog.pos):
         for index,posTag in enumerate(dialog.pos):
             feature = feature + [
-                "token.{}={}".format(index,posTag.token),
-                "pos.{}={}".format(index,posTag.pos)
+                # "token.{}={}".format(index,posTag.token),
+                # "pos.{}={}".format(index,posTag.pos)
+                posTag.token,
+                posTag.pos
             ]
     else:
         feature = feature + [
-            "token.0={}".format("UNDEFINED"),
-            "pos.0={}".format("UNDEFINED")
+            # "token.0={}".format("UNDEFINED"),
+            # "pos.0={}".format("UNDEFINED")
+            "UNDEFINED","UNDEFINED"
         ]
     return(feature)
 
